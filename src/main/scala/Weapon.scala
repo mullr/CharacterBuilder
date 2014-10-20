@@ -28,12 +28,8 @@ case class Weapon (
   requiredStats: StatBlock = StatBlock.zero) {
   // todo: other weapon properties
 
-  def apply(s: Sheet) = {
-    val attack = Attack(weapon = this)
-    s.copy(attacks = s.attacks + attack)
-  }
+  def apply(s: Sheet) = s.withAction(AttackAction(weapon = this))
 }
-
 
 object Weapons {
   val club           = Weapon("Club",           1 sp,  Simple, Melee,  Roll(1, d4), Bludgeoning,  2 lb)

@@ -124,15 +124,6 @@ case class Class (
 // - Re-roll failed saving throw once   => num allowed rerolls on roll types
 
 
-case class Attack(
-  weapon: Weapon,
-  attackModifiers: Set[CheckModifier] = Set(),
-  damageModifiers: Set[RollModifier] = Set()) {
-
-  def withAttackModifier(mod: CheckModifier) =
-    this.copy(attackModifiers = attackModifiers + mod)
-}
-
 case class ACBonus(
   value: Int,
   description: String
@@ -147,12 +138,26 @@ case class ArmorClass(
     this.copy(bonuses = bonuses + bonus)
 }
 
-// Equipping a weapon goes through its sheet function to add an attack
-// Equipping armor goes through its sheet function to set a base AC
+sealed trait ActionType
+object ActionType {
+  case object Move extends ActionType
+  case object Normal extends ActionType
+  case object Bonus extends ActionType
+  case object Reaction extends ActionType
+}
 
-// possible layer model of sheets
-// - layers are data, add them together; generate them from abilities,
-//   items, etc with fn Sheet => Layer
+trait Action { val actionType: ActionType }
+
+case class AttackAction(
+  weapon: Weapon,
+  attackModifiers: Set[CheckModifier] = Set(),
+  damageModifiers: Set[RollModifier] = Set()) extends Action {
+
+  val actionType = ActionType.Normal
+
+  def withAttackModifier(mod: CheckModifier) =
+    this.copy(attackModifiers = attackModifiers + mod)
+}
 
 
 case class Sheet(
@@ -162,9 +167,11 @@ case class Sheet(
   armor: Option[Armor] = None,
 
   // abilities
-  attacks: Set[Attack] = Set(),
+  actions: Set[Action] = Set(),
   ac: ArmorClass = ArmorClass()
-)
+) {
+  def withAction(a: Action) = this.copy(actions = actions + a)
+}
 
 
 object Sheet {
@@ -175,15 +182,13 @@ object Sheet {
 
 
 object FightingStyles {
-  def archery(s: Sheet) = {
-    val newAttacks = s.attacks.map { a =>
-      a.weapon.combatType match {
-        case Ranged => a.withAttackModifier(RollBonus(2, "archery"))
-        case _ => a
-      }
-    }
-    s.copy(attacks = newAttacks)
-  }
+  def archery(s: Sheet) =
+    s.copy(actions = s.actions.map {
+      case a @ AttackAction(weapon, _, _) if weapon.combatType == Ranged =>
+        a.withAttackModifier(RollBonus(2, "archery"))
+      case other => other
+    })
+
 
   def defense(s: Sheet) = {
     s.armor match {
@@ -194,39 +199,6 @@ object FightingStyles {
 
 
 object Classes {
-// // TODO: implement attack roll filters that allow re-rolling
-// //  def greatWeaponFighting = AttackRollFilter { roll =>
-// //    if((roll.result == 1 || roll.result == 2) &&
-// //       (roll.attack.weapon.isTwoHanded || roll.attack.weapon.isVersatile) &&
-// //       (roll.attack.attacker.wieldingOnlyOneWeapon))
-// //      Message("You can re-roll")
-// //    else
-// //      roll
-// //  }
-
-//   def protection = PersonFilter { person =>
-//     person.withActionAbility("Protection", BonusAction)}
-
-// // TODO: two-weapon fighting
-
-//   def fightingStyle = CharacterParameter(1,
-//     Set(archery, defense, dueling, protection)
-//   )
-
-//   def doSecondWind(person: Person) =
-//     person.restoreHp(Roll())
-
-
-//   def secondWind = PersonFilter { person =>
-//     person.withBonusActionAbility()
-//   }
-
-
-//   def levelBonuses = Map(
-//     (1 -> Seq(fightingStyle, secondWind)
-//   )
-
-
   def fighter = Class(
     name = "fighter",
     hitDie = d10,
