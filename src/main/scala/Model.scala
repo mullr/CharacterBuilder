@@ -161,6 +161,19 @@ case class AttackAction(
 
 
 case class Sheet(
+  name: String,
+  levels: Map[Class, Int] = Map(),
+  race: Race,
+  alignment: Alignment,
+  stats: StatBlock,
+
+  // background
+  background: String = "",  // TODO
+  personalityTraits: String = "",
+  ideals: String = "",
+  bonds: String = "",
+  flaws: String = "",
+
   // wields
   primaryWeapon: Option[Weapon] = None,
   secondaryWeapon: Option[Weapon] = None,
@@ -175,7 +188,7 @@ case class Sheet(
 
 
 object Sheet {
-  def empty = Sheet()
+//  def empty = Sheet()
 
   type SheetTransform = Sheet => Sheet
 }
@@ -214,4 +227,4 @@ object Classes {
     ),
     skills = CharacterParameter(2, Set(Acrobatics, AnimalHandling, Athletics, History, Insight, Intimidation, Perception, Survival))
   )
- }
+}

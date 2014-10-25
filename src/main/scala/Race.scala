@@ -54,6 +54,24 @@ object Races {
     chooseOneTool = Set(Tools.smithsTools, Tools.brewersSupplies, Tools.masonsTools)
     // TODO: stonecunning
   )
+
+  def human = Race(
+    name = "Human",
+    statBonus = StatBonus(str=1, dex=1, con=1, int=1, wis=1, cha=1),
+    ageOfAdulthood = 50 years,
+    averageLifespan = 350 years,
+    normalAlignment = Alignment(Lawful, Good),
+    size = Medium,
+    heightRange = TypedRange(4 feet, 5 feet),
+    averageWeight = 150 lb,
+    baseWalkingSpeed = 30 feetPerRound,
+    vision = DarkVision,
+    rollModifiers = Map(),
+    weaponProficiencies = Set(),
+    chooseOneTool = Set()
+  )
+
+
 }
 
 object SubRaces {
